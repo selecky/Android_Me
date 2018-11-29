@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.example.android.android_me.R;
 import com.example.android.android_me.data.AndroidImageAssets;
@@ -20,14 +21,10 @@ import java.util.List;
 
 public class HeadFragment extends Fragment {
 
-    private static final String TAG = "BodyPartFragment";
-    public static final String IMAGE_LIST = "com.example.android.android_me.IMAGE_LIST";
-    public static final String LIST_INDEX = "com.example.android.android_me.LIST_INDEX";
-
 
     private List<Integer> mImageList;
-    private int mListIndex;
-    private int rest = mListIndex % 12;
+    private int mImageId;
+    private int rest = mImageId % 12;
     private SharedViewModel viewModel;
 
 
@@ -35,33 +32,24 @@ public class HeadFragment extends Fragment {
     }
 
 
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        if (savedInstanceState != null) {
-            mImageList = savedInstanceState.getIntegerArrayList(IMAGE_LIST);
-            mListIndex = savedInstanceState.getInt(LIST_INDEX);
-        }
-
-
-
-
         View rootView = inflater.inflate(R.layout.fragment_body_part, container, false);
 
-        final ImageView imageView = (ImageView) rootView.findViewById(R.id.body_part_image_view);
+        final ImageView imageView = rootView.findViewById(R.id.body_part_image_view);
 
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mListIndex < mImageList.size() - 1) {
-                    mListIndex++;
+                if (mImageId < mImageList.size() - 1) {
+                    mImageId++;
                 } else {
-                    mListIndex = 0;
+                    mImageId = 0;
                 }
 
-                imageView.setImageResource(mImageList.get(mListIndex));
+                imageView.setImageResource(mImageList.get(mImageId));
 
 
             }
@@ -72,9 +60,12 @@ public class HeadFragment extends Fragment {
         viewModel.getSelectedImageId().observe(this, new Observer<Integer>() {
             @Override
             public void onChanged(@Nullable Integer integer) {
-                mListIndex = integer;
-                if (mListIndex/12 == 0) {
-                    imageView.setImageResource(AndroidImageAssets.getHeads().get(rest));
+                mImageId = integer;
+
+                if (mImageId > AndroidImageAssets.getHeads().size() -1 &&
+                        mImageId < (AndroidImageAssets.getAll().size() - AndroidImageAssets.getLegs().size()) -1
+                        ) {
+                    imageView.setImageResource(AndroidImageAssets.getAll().get(mImageId));
                 }
                 else {
                     return;
@@ -84,18 +75,12 @@ public class HeadFragment extends Fragment {
         });
 
 
-
         if (mImageList != null) {
-
-                imageView.setImageResource(mImageList.get(mListIndex));
-
-
-
-        } else
-
-        {
-            Log.d(TAG, "List of images in fragment is empty");
+            imageView.setImageResource(mImageList.get(mImageId));
+        } else {
+            Toast.makeText(getActivity(), "List of images in fragment is empty", Toast.LENGTH_SHORT).show();
         }
+
 
         return rootView;
     }
@@ -105,13 +90,9 @@ public class HeadFragment extends Fragment {
         this.mImageList = ImageList;
     }
 
-    public void setListIndex(int ListIndex) {
-        this.mListIndex = ListIndex;
+    public void setImageId(int imageId) {
+        this.mImageId = imageId;
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle currentState) {
-        currentState.putIntegerArrayList(IMAGE_LIST, (ArrayList<Integer>) mImageList);
-        currentState.putInt(LIST_INDEX, mListIndex);
-    }
+
 }
