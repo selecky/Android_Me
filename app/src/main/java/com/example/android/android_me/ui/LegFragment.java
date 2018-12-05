@@ -5,27 +5,20 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.example.android.android_me.R;
 import com.example.android.android_me.data.AndroidImageAssets;
 import com.example.android.android_me.data.SharedViewModel;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class LegFragment extends Fragment {
 
-
-    private List<Integer> mImageList;
     private int mImageId;
-    private int rest = mImageId % 12;
     private SharedViewModel viewModel;
+    private int clickCounter;
 
 
     public LegFragment() {
@@ -43,13 +36,31 @@ public class LegFragment extends Fragment {
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mImageId < mImageList.size() - 1) {
-                    mImageId++;
-                } else {
-                    mImageId = 0;
+
+                clickCounter++;
+
+                /**
+                 * Handling the case during the start of an app when clickCounter = 0
+                 */
+                if (clickCounter == 1) {
+                    clickCounter = AndroidImageAssets.getHeads().size()
+                            + AndroidImageAssets.getBodies().size()
+                            + 1;
                 }
 
-                imageView.setImageResource(mImageList.get(mImageId));
+
+                /**
+                 * When the last leg image is displayed, on-click displays the first again.
+                 */
+                if (clickCounter > AndroidImageAssets.getHeads().size()
+                        + AndroidImageAssets.getBodies().size()
+                        + AndroidImageAssets.getLegs().size()
+                        - 1) {
+                    clickCounter = AndroidImageAssets.getHeads().size()
+                            + AndroidImageAssets.getBodies().size();
+                }
+
+                imageView.setImageResource(AndroidImageAssets.getAll().get(clickCounter));
 
 
             }
@@ -60,14 +71,18 @@ public class LegFragment extends Fragment {
         viewModel.getSelectedImageId().observe(this, new Observer<Integer>() {
             @Override
             public void onChanged(@Nullable Integer integer) {
+
                 mImageId = integer;
 
-                if (mImageId > AndroidImageAssets.getHeads().size() -1 &&
-                        mImageId < (AndroidImageAssets.getAll().size() - AndroidImageAssets.getLegs().size()) -1
-                        ) {
+                /**
+                 * Only leg images to be displayed in LegFragment
+                 */
+                if (mImageId > AndroidImageAssets.getHeads().size()
+                        + AndroidImageAssets.getBodies().size()
+                        - 1 ) {
+                    clickCounter = mImageId;
                     imageView.setImageResource(AndroidImageAssets.getAll().get(mImageId));
-                }
-                else {
+                } else {
                     return;
                 }
 
@@ -75,23 +90,10 @@ public class LegFragment extends Fragment {
         });
 
 
-        if (mImageList != null) {
-            imageView.setImageResource(mImageList.get(mImageId));
-        } else {
-            Toast.makeText(getActivity(), "List of images in fragment is empty", Toast.LENGTH_SHORT).show();
-        }
+        imageView.setImageResource(AndroidImageAssets.getLegs().get(mImageId));
 
 
         return rootView;
-    }
-
-
-    public void setImageList(List<Integer> ImageList) {
-        this.mImageList = ImageList;
-    }
-
-    public void setImageId(int imageId) {
-        this.mImageId = imageId;
     }
 
 

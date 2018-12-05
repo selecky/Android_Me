@@ -13,7 +13,6 @@ public class SharedViewModel extends ViewModel {
     }
 
     public LiveData<Integer> getSelectedImageId() {
-
-        return selectedImageId;
+            return selectedImageId;
     }
 }
